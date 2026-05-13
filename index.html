@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#06121f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="BTC Sentinel">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Bitcoin Sentinel</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="rail">
+      <div class="brand">
+        <img class="mark" src="icon.svg" alt="Bitcoin Sentinel">
+        <div>
+          <strong>Bitcoin Sentinel</strong>
+          <span>Live BTC timing board</span>
+        </div>
+      </div>
+      <nav>
+        <a href="#dashboard" class="active">Dashboard</a>
+        <a href="#signals">Signals</a>
+        <a href="#history">History</a>
+        <a href="#settings">Settings</a>
+      </nav>
+      <div class="rail-card">
+        <span class="label">Monitor</span>
+        <strong id="monitor-state">Starting</strong>
+        <small id="last-updated">Waiting for feed</small>
+      </div>
+    </aside>
+
+    <main>
+      <section id="dashboard" class="hero-board">
+        <div>
+          <p class="eyebrow">BTC / USD</p>
+          <h1 id="price">$--</h1>
+          <div class="price-row">
+            <span id="change-24h" class="chip neutral">24h --</span>
+            <span id="spread-status" class="chip">Live market scan</span>
+          </div>
+        </div>
+        <div class="decision-card" id="decision-card">
+          <span class="label">Current Signal</span>
+          <strong id="signal-title">Warming up</strong>
+          <p id="signal-copy">Loading recent market history before calling a buy window.</p>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="panel chart-panel">
+          <div class="panel-head">
+            <div>
+              <span class="label">Live Chart</span>
+              <h2>Path, curve, and momentum</h2>
+            </div>
+            <div class="segmented" id="range-buttons">
+              <button data-days="1" class="active">24H</button>
+              <button data-days="7">7D</button>
+              <button data-days="30">30D</button>
+            </div>
+          </div>
+          <canvas id="price-chart" width="960" height="420" aria-label="Bitcoin price chart"></canvas>
+          <div class="chart-footer">
+            <span>Support <b id="support">$--</b></span>
+            <span>Resistance <b id="resistance">$--</b></span>
+            <span>Observed samples <b id="sample-count">0</b></span>
+          </div>
+        </article>
+
+        <article id="signals" class="panel">
+          <div class="panel-head">
+            <div>
+              <span class="label">Signal Engine</span>
+              <h2>Buy / sell timing</h2>
+            </div>
+            <div class="score-ring"><span id="score">--</span></div>
+          </div>
+          <div class="meter"><span id="score-bar"></span></div>
+          <div class="signal-duo">
+            <div class="signal-tile buy-tile">
+              <span>Buy Score</span>
+              <strong id="buy-score">--</strong>
+              <small id="buy-reason">Waiting for range</small>
+            </div>
+            <div class="signal-tile sell-tile">
+              <span>Sell Score</span>
+              <strong id="sell-score">--</strong>
+              <small id="sell-reason">Waiting for range</small>
+            </div>
+          </div>
+          <div class="metrics">
+            <div><span>RSI</span><strong id="rsi">--</strong></div>
+            <div><span>Trend</span><strong id="trend">--</strong></div>
+            <div><span>Curve</span><strong id="curve">--</strong></div>
+            <div><span>Volatility</span><strong id="volatility">--</strong></div>
+            <div><span>Confidence</span><strong id="confidence">--</strong></div>
+            <div><span>24h Range</span><strong id="learned-range">--</strong></div>
+          </div>
+          <div class="rule-list" id="rule-list"></div>
+        </article>
+      </section>
+
+      <section class="grid lower">
+        <article id="history" class="panel">
+          <div class="panel-head">
+            <div>
+              <span class="label">Session History</span>
+              <h2>What the browser has learned</h2>
+            </div>
+            <button class="ghost" id="clear-history">Clear</button>
+          </div>
+          <div class="timeline" id="timeline"></div>
+          <div class="backtest">
+            <div><span>Buy tests</span><strong id="buy-tests">--</strong></div>
+            <div><span>Sell tests</span><strong id="sell-tests">--</strong></div>
+            <div><span>Scalp target</span><strong id="scalp-target">--</strong></div>
+          </div>
+        </article>
+
+        <article id="settings" class="panel">
+          <div class="panel-head">
+            <div>
+              <span class="label">Alerts</span>
+              <h2>Buy-window monitor</h2>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="alerts-enabled" checked>
+              <span></span>
+            </label>
+          </div>
+          <div class="settings-list">
+            <label>
+              Refresh every
+              <select id="refresh-rate">
+                <option value="30000">30 seconds</option>
+                <option value="60000" selected>60 seconds</option>
+                <option value="120000">2 minutes</option>
+              </select>
+            </label>
+            <label>
+              Signal alert threshold
+              <input id="threshold" type="range" min="55" max="90" value="72">
+              <span id="threshold-label">72</span>
+            </label>
+          </div>
+          <p class="fine-print">Signals are probability-style market indicators, not financial advice. Crypto can move hard against any signal.</p>
+          <div class="source-box">
+            <span>Data source</span>
+            <strong>CoinGecko public API</strong>
+            <small id="api-status">Connecting...</small>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <button id="toast-close" aria-label="Clear notification">×</button>
+    <span id="toast-type">Signal</span>
+    <strong id="toast-title">Notification</strong>
+    <p id="toast-body"></p>
+    <small id="toast-time"></small>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
