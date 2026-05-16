@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#06121f">
+  <meta name="theme-color" content="#040b14">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="BTC Sentinel">
@@ -15,44 +15,62 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="rail">
-      <div class="brand">
-        <img class="mark" src="icon.svg" alt="Bitcoin Sentinel">
-        <div>
-          <strong>Bitcoin Sentinel</strong>
-          <span>Live BTC timing board</span>
-        </div>
-      </div>
-      <nav>
-        <a href="#dashboard" class="active">Dashboard</a>
-        <a href="#signals">Signals</a>
-        <a href="#history">History</a>
-        <a href="#settings">Settings</a>
-      </nav>
-      <div class="rail-card">
-        <span class="label">Monitor</span>
-        <strong id="monitor-state">Starting</strong>
-        <small id="last-updated">Waiting for feed</small>
-      </div>
-    </aside>
+  <header class="topbar">
+    <button class="brand" type="button" data-tab="dashboard">
+      <img class="mark" src="icon.svg" alt="Bitcoin Sentinel">
+      <span><strong>Bitcoin Sentinel</strong><small>BTC signal command center</small></span>
+    </button>
+    <nav class="tabs" aria-label="Primary">
+      <button class="active" data-tab="dashboard" type="button">Dashboard</button>
+      <button data-tab="signals" type="button">Signals</button>
+      <button data-tab="market" type="button">Market Log</button>
+      <button data-tab="notifications" type="button">Notifications</button>
+      <button data-tab="settings" type="button">Settings</button>
+    </nav>
+    <div class="monitor">
+      <span id="monitor-state">Starting</span>
+      <small id="last-updated">Waiting for feed</small>
+    </div>
+  </header>
 
-    <main>
-      <section id="dashboard" class="hero-board">
-        <div>
-          <p class="eyebrow">BTC / USD</p>
-          <h1 id="price">$--</h1>
-          <div class="price-row">
-            <span id="change-24h" class="chip neutral">24h --</span>
-            <span id="spread-status" class="chip">Live market scan</span>
+  <main class="workspace">
+    <section class="page active" id="page-dashboard">
+      <div class="hero-board">
+        <article class="price-card glass">
+          <div>
+            <p class="eyebrow">BTC / USD</p>
+            <h1 id="price">$--</h1>
+            <div class="price-row">
+              <span id="change-24h" class="chip neutral">24h --</span>
+              <span id="spread-status" class="chip">Live market scan</span>
+              <span class="chip">Investment <b id="investment-pill">$100</b></span>
+            </div>
           </div>
-        </div>
-        <div class="decision-card" id="decision-card">
+        </article>
+        <article class="decision-card glass" id="decision-card">
           <span class="label">Current Signal</span>
           <strong id="signal-title">Warming up</strong>
-          <p id="signal-copy">Loading recent market history before calling a buy window.</p>
-        </div>
-      </section>
+          <p id="signal-copy">Loading recent market history before calling a buy or sell window.</p>
+        </article>
+      </div>
+
+      <div class="action-grid">
+        <article class="signal-command buy-command">
+          <span>Recommended Buy</span>
+          <strong id="recommended-buy">$--</strong>
+          <small id="buy-plan">Waiting for signal</small>
+        </article>
+        <article class="signal-command sell-command">
+          <span>Sell Target</span>
+          <strong id="recommended-sell">$--</strong>
+          <small id="sell-plan">Waiting for signal</small>
+        </article>
+        <article class="signal-command profit-command">
+          <span>Projected Profit</span>
+          <strong id="projected-profit">$--</strong>
+          <small id="profit-plan">After fees/slippage, confirm manually.</small>
+        </article>
+      </div>
 
       <section class="grid">
         <article class="panel chart-panel">
@@ -62,80 +80,159 @@
               <h2>Path, curve, and momentum</h2>
             </div>
             <div class="segmented" id="range-buttons">
-              <button data-days="1" class="active">24H</button>
-              <button data-days="7">7D</button>
-              <button data-days="30">30D</button>
+              <button data-days="1" class="active" type="button">24H</button>
+              <button data-days="7" type="button">7D</button>
+              <button data-days="30" type="button">30D</button>
             </div>
           </div>
           <canvas id="price-chart" width="960" height="420" aria-label="Bitcoin price chart"></canvas>
           <div class="chart-footer">
             <span>Support <b id="support">$--</b></span>
             <span>Resistance <b id="resistance">$--</b></span>
-            <span>Observed samples <b id="sample-count">0</b></span>
+            <span>Observed <b id="sample-count">0</b></span>
           </div>
         </article>
 
-        <article id="signals" class="panel">
+        <article class="panel">
           <div class="panel-head">
             <div>
-              <span class="label">Signal Engine</span>
-              <h2>Buy / sell timing</h2>
+              <span class="label">Model</span>
+              <h2>Confidence stack</h2>
             </div>
             <div class="score-ring"><span id="score">--</span></div>
           </div>
           <div class="meter"><span id="score-bar"></span></div>
-          <div class="signal-duo">
-            <div class="signal-tile buy-tile">
-              <span>Buy Score</span>
-              <strong id="buy-score">--</strong>
-              <small id="buy-reason">Waiting for range</small>
-            </div>
-            <div class="signal-tile sell-tile">
-              <span>Sell Score</span>
-              <strong id="sell-score">--</strong>
-              <small id="sell-reason">Waiting for range</small>
-            </div>
+          <div class="metrics compact">
+            <div><span>Buy Score</span><strong id="buy-score">--</strong></div>
+            <div><span>Sell Score</span><strong id="sell-score">--</strong></div>
+            <div><span>Confidence</span><strong id="confidence">--</strong></div>
+            <div><span>Scalp Target</span><strong id="scalp-target">--</strong></div>
           </div>
+          <div class="rule-list" id="rule-list"></div>
+        </article>
+      </section>
+    </section>
+
+    <section class="page" id="page-signals">
+      <div class="page-head">
+        <div>
+          <span class="label">Signals</span>
+          <h1>Buy / Sell Intelligence</h1>
+        </div>
+        <span class="chip" id="api-status">Connecting...</span>
+      </div>
+      <div class="signal-duo signal-wide">
+        <div class="signal-tile buy-tile">
+          <span>Buy Score</span>
+          <strong id="buy-score-large">--</strong>
+          <small id="buy-reason">Waiting for range</small>
+        </div>
+        <div class="signal-tile sell-tile">
+          <span>Sell Score</span>
+          <strong id="sell-score-large">--</strong>
+          <small id="sell-reason">Waiting for range</small>
+        </div>
+      </div>
+      <section class="grid">
+        <article class="panel">
+          <div class="panel-head"><div><span class="label">Market Physics</span><h2>Curve diagnostics</h2></div></div>
           <div class="metrics">
             <div><span>RSI</span><strong id="rsi">--</strong></div>
             <div><span>Trend</span><strong id="trend">--</strong></div>
             <div><span>Curve</span><strong id="curve">--</strong></div>
             <div><span>Volatility</span><strong id="volatility">--</strong></div>
-            <div><span>Confidence</span><strong id="confidence">--</strong></div>
-            <div><span>24h Range</span><strong id="learned-range">--</strong></div>
+            <div><span>Range Position</span><strong id="learned-range">--</strong></div>
+            <div><span>Learned Samples</span><strong id="learned-samples">--</strong></div>
+            <div><span>Pattern Match</span><strong id="pattern-match">--</strong></div>
+            <div><span>History Edge</span><strong id="history-edge">--</strong></div>
           </div>
-          <div class="rule-list" id="rule-list"></div>
+        </article>
+        <article class="panel">
+          <div class="panel-head"><div><span class="label">Backtest</span><h2>Session hit rate</h2></div></div>
+          <div class="backtest">
+            <div><span>Buy Tests</span><strong id="buy-tests">--</strong></div>
+            <div><span>Sell Tests</span><strong id="sell-tests">--</strong></div>
+            <div><span>Target</span><strong id="scalp-target-2">--</strong></div>
+          </div>
+          <p class="fine-print" id="history-status">Loading CSV history.</p>
+          <p class="fine-print">Backtests use the loaded CSV history, browser session, and public market chart data. Signals are directional checks, not guaranteed future results.</p>
         </article>
       </section>
+    </section>
 
-      <section class="grid lower">
-        <article id="history" class="panel">
-          <div class="panel-head">
-            <div>
-              <span class="label">Session History</span>
-              <h2>What the browser has learned</h2>
-            </div>
-            <button class="ghost" id="clear-history">Clear</button>
-          </div>
-          <div class="timeline" id="timeline"></div>
-          <div class="backtest">
-            <div><span>Buy tests</span><strong id="buy-tests">--</strong></div>
-            <div><span>Sell tests</span><strong id="sell-tests">--</strong></div>
-            <div><span>Scalp target</span><strong id="scalp-target">--</strong></div>
+    <section class="page" id="page-market">
+      <div class="page-head">
+        <div>
+          <span class="label">Market Log</span>
+          <h1>Rises, dips, highs, and lows</h1>
+        </div>
+        <button class="ghost" id="clear-history" type="button">Clear Session</button>
+      </div>
+      <section class="grid">
+        <article class="panel">
+          <div class="panel-head"><div><span class="label">Range</span><h2>24H / 7D extremes</h2></div></div>
+          <div class="metrics">
+            <div><span>24H High</span><strong id="high-24h">$--</strong></div>
+            <div><span>24H Low</span><strong id="low-24h">$--</strong></div>
+            <div><span>7D High</span><strong id="high-7d">$--</strong></div>
+            <div><span>7D Low</span><strong id="low-7d">$--</strong></div>
           </div>
         </article>
+        <article class="panel">
+          <div class="panel-head"><div><span class="label">Session History</span><h2>What the browser has learned</h2></div></div>
+          <div class="timeline" id="timeline"></div>
+        </article>
+      </section>
+      <article class="panel">
+        <div class="panel-head"><div><span class="label">Live Tape</span><h2>Recent price movement</h2></div></div>
+        <div class="market-log" id="market-log"></div>
+      </article>
+    </section>
 
-        <article id="settings" class="panel">
-          <div class="panel-head">
-            <div>
-              <span class="label">Alerts</span>
-              <h2>Buy-window monitor</h2>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="alerts-enabled" checked>
-              <span></span>
+    <section class="page" id="page-notifications">
+      <div class="page-head">
+        <div>
+          <span class="label">Notifications</span>
+          <h1>Signal archive</h1>
+        </div>
+        <button class="ghost" id="clear-notifications" type="button">Clear Alerts</button>
+      </div>
+      <div class="notification-list" id="notification-list"></div>
+    </section>
+
+    <section class="page" id="page-settings">
+      <div class="page-head">
+        <div>
+          <span class="label">Settings</span>
+          <h1>Buy-window monitor</h1>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="alerts-enabled" checked>
+          <span></span>
+        </label>
+      </div>
+      <section class="grid">
+        <article class="panel">
+          <div class="panel-head"><div><span class="label">Trading Plan</span><h2>Investment-aware alerts</h2></div></div>
+          <div class="settings-list">
+            <label>
+              Investment amount
+              <input id="investment-amount" type="number" min="1" step="1" value="100">
+            </label>
+            <label>
+              Profit target
+              <input id="profit-target" type="range" min="0.1" max="3" step="0.1" value="0.6">
+              <span id="profit-target-label">0.6%</span>
+            </label>
+            <label>
+              Signal alert threshold
+              <input id="threshold" type="range" min="55" max="90" value="72">
+              <span id="threshold-label">72</span>
             </label>
           </div>
+        </article>
+        <article class="panel">
+          <div class="panel-head"><div><span class="label">Data Feed</span><h2>Public API configuration</h2></div></div>
           <div class="settings-list">
             <label>
               Refresh every
@@ -146,24 +243,21 @@
               </select>
             </label>
             <label>
-              Signal alert threshold
-              <input id="threshold" type="range" min="55" max="90" value="72">
-              <span id="threshold-label">72</span>
+              Source mode
+              <select id="source-mode">
+                <option value="coingecko" selected>CoinGecko keyless public API</option>
+                <option value="coingecko-coinbase">CoinGecko + Coinbase fallback</option>
+              </select>
             </label>
           </div>
-          <p class="fine-print">Signals are probability-style market indicators, not financial advice. Crypto can move hard against any signal.</p>
-          <div class="source-box">
-            <span>Data source</span>
-            <strong>CoinGecko public API</strong>
-            <small id="api-status">Connecting...</small>
-          </div>
+          <p class="fine-print">CoinGecko keyless public endpoints are used for live market and chart data. Coinbase public candles are kept as a fallback option for BTC-USD candles when enabled.</p>
         </article>
       </section>
-    </main>
-  </div>
+    </section>
+  </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite">
-    <button id="toast-close" aria-label="Clear notification">×</button>
+    <button id="toast-close" aria-label="Clear notification">x</button>
     <span id="toast-type">Signal</span>
     <strong id="toast-title">Notification</strong>
     <p id="toast-body"></p>

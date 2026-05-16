@@ -1,9 +1,10 @@
-const CACHE = "bitcoin-sentinel-v4";
+const CACHE = "bitcoin-sentinel-v7";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./Bitcoin_3_14_2026-5_15_2026_historical_data_coinmarketcap.csv",
   "./manifest.webmanifest",
   "./icon.svg",
   "./icon-512.png",
